@@ -1,12 +1,15 @@
 import requests
 import time
+
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from colorama import Style, Fore
+
 from IO import SaveReport
+from Checks import Checks
 
 visited_urls = set()
-Index = 1
+Index = 1     
 
 def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False,
                   RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, HeadlessBrowser=False, ExternalVisits=False, DeepSearch=False, ExcludePaths=None):
@@ -22,25 +25,15 @@ def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=Fal
     Index += 1
 
     if ExcludePaths is not None:
-        print("Adding URLs from: ", ExcludePaths)
-        with open(ExcludePaths, 'r') as file:
-            for line in file:
-                cleanline = line.strip()
-                if verbose:
-                    print("Add URL: ", cleanline)
-                visited_urls.add(cleanline)
+        Checks.ExcludePaths(Verbose=verbose, ExcludePath=ExcludePaths, Visted_URLs=visited_urls)
     
     parsed_url = urlparse(url)
-    if parsed_url.scheme != 'http' and parsed_url.scheme != 'https':
-        if verbose:
-            print(Fore.YELLOW, f"Skipped URL with invalid scheme: {url}")
-            print(Style.RESET_ALL)
+    # If the HTTP Link is Invalid then it returns True
+    if Checks.InvalidHttp(url, parsed_url, verbose) is True:
         return
     
-    if not DeepSearch and parsed_url.query:
-        if verbose:
-            print(Fore.YELLOW, f"Skipped URL with query parameters: {url}")
-            print(Style.RESET_ALL)
+    # If DeepSearch is False, it returns False
+    if Checks.QueryParameter(url, parsed_url, DeepSearch=DeepSearch, Verbose=verbose) is False:
         return
     
     print(Fore.GREEN, f"({Index}) {url}", end=' ')
