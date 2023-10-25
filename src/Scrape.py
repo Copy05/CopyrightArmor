@@ -1,3 +1,9 @@
+#
+# (c) Copyright Copy05, 2023
+#
+# Scrape.py | The ScrapingEngine of CopyrightArmor.
+#
+
 import requests
 import time
 
@@ -6,10 +12,11 @@ from urllib.parse import urljoin, urlparse
 from colorama import Style, Fore
 
 from IO import SaveReport
-from Checks import Checks
+from checks import Checks
+from verbose_print import PrintFoundLinks
 
 visited_urls = set()
-Index = 1     
+Index = 1
 
 def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False,
                   RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, HeadlessBrowser=False, ExternalVisits=False, DeepSearch=False, ExcludePaths=None):
@@ -50,9 +57,7 @@ def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=Fal
 
         if soup and verbose:
             for anchor_tag in soup.find_all('a', href=True):
-                print(Fore.YELLOW, f"Anchor Tag: {urljoin(url, anchor_tag['href'])}")
-                print(f"Anchor Text: {anchor_tag.text.strip()}")
-                print(Style.RESET_ALL)
+                PrintFoundLinks(url, anchor_tag)
 
         if soup and not ExternalVisits:
             for link in soup.find_all('a', href=True):
@@ -68,6 +73,7 @@ def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=Fal
     except requests.exceptions.TooManyRedirects:
         print(Fore.RED, "Overloaded.")
         print(Style.RESET_ALL)
+
         if ReportFile:
             SaveReport(visited_urls)
             exit()
