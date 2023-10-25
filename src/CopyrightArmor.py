@@ -1,5 +1,5 @@
 import argparse
-from colorama import Style, Fore, Back
+from colorama import Style, Fore
 from Scrape import ScrapeWebsite
 from urllib.parse import urlparse
 
@@ -31,9 +31,9 @@ if __name__ == "__main__":
     parser.add_argument("--user-agent", "-ua", help="Specify a custom User-Agent header for HTTP requests (to mimic different user agents).")
     parser.add_argument("--ignore-robots-txt", "--no-robots-txt", help="Ignore the 'robots.txt' file, which is used to control web crawlers.")
     parser.add_argument("--depth", "-d", help="Specify how deep the tool should crawl the website (number of levels).")
-    parser.add_argument("--external-visits", "-ev", action="store_true", help="Specify how deep the tool should crawl the website (number of levels).")
-    parser.add_argument("--deep-search", "-ds", action="store_true", help="Specify how deep the tool should crawl the website (number of levels).")
-    parser.add_argument("--exclude", help="Specify how deep the tool should crawl the website (number of levels).")
+    parser.add_argument("--external-visits", "-ev", action="store_true", help="Enables visiting sites that's outside the original website")
+    parser.add_argument("--deep-search", "-ds", action="store_true", help="Enables deep search which also includes query paramters (.*?*=*)")
+    parser.add_argument("--exclude", help="Specifies a text file with all URLs to Exclude")
 
     args = parser.parse_args()
 

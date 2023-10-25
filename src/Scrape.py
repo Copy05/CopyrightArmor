@@ -1,8 +1,8 @@
 import requests
 import time
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse, parse_qs
-from colorama import Style, Fore, Back
+from urllib.parse import urljoin, urlparse
+from colorama import Style, Fore
 from IO import SaveReport
 
 visited_urls = set()
@@ -64,19 +64,21 @@ def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=Fal
         if soup and not ExternalVisits:
             for link in soup.find_all('a', href=True):
                 next_url = urljoin(url, link['href'])
-                if next_url.startswith(url):  # Check if next_url starts with the given url
+                if next_url.startswith(url):
                     ScrapeWebsite(next_url, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, 
                   DeepSearch=DeepSearch)
         else:
             if verbose:
                 print(Fore.RED, f"The given URL \"{url}\" is invalid.", end=' ')
                 print(Style.RESET_ALL)
+                
     except requests.exceptions.TooManyRedirects:
         print(Fore.RED, "Overloaded.")
         print(Style.RESET_ALL)
         if ReportFile:
             SaveReport(visited_urls)
             exit()
+
     except KeyboardInterrupt:
         print("Exiting Scrape Mode.")
 

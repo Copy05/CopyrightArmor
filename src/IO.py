@@ -1,3 +1,9 @@
+#
+# (c) Copyright Copy05, 2023
+#
+# IO.py | Input & Output files
+#
+
 import datetime
 import time
 
