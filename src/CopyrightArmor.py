@@ -25,6 +25,7 @@ if __name__ == "__main__":
     parser.add_argument("--rate-limit", action="store_true", help="Set a rate limit for requests (requests per second) to avoid overloading websites.")
     parser.add_argument("--headless-browser", "--headless", help="Use a headless browser for website interaction and content detection.")
     parser.add_argument("--verbose", "-v", action="store_true", help="Increase verbosity for debugging purposes.")
+    parser.add_argument("--debug", action="store_true", help="Enables Debug Informations for Debug purposes")
     parser.add_argument("--file-types", help="Specify file types/extensions to look for (e.g., .mp3, .mp4, .pdf).")
     parser.add_argument("--keyword", help="Provide keywords or phrases to identify pirated content.")
     parser.add_argument("--proxy", "-p", help="Use a proxy server for anonymized scanning (if necessary).")
@@ -33,6 +34,7 @@ if __name__ == "__main__":
     parser.add_argument("--depth", "-d", help="Specify how deep the tool should crawl the website (number of levels).")
     parser.add_argument("--external-visits", "-ev", action="store_true", help="Enables visiting sites that's outside the original website")
     parser.add_argument("--deep-search", "-ds", action="store_true", help="Enables deep search which also includes query paramters (.*?*=*)")
+    parser.add_argument("--include-socials", "-is", action="store_true", help="Allows Social Media Links to scan")
     parser.add_argument("--exclude", help="Specifies a text file with all URLs to Exclude")
 
     args = parser.parse_args()
@@ -45,7 +47,7 @@ if __name__ == "__main__":
             args.site = "https://" + args.site
 
     ScrapeWebsite(args.site, RateLimmit=args.rate_limit, verbose=args.verbose, ExternalVisits=args.external_visits, 
-                  DeepSearch=args.deep_search, ReportFile=args.report_file, ExcludePaths=args.exclude)
+                  DeepSearch=args.deep_search, ReportFile=args.report_file, ExcludePaths=args.exclude, IncludeSocials=args.include_socials, DebugInformation=args.debug)
 
 
     if not any(vars(args).values()):

@@ -6,22 +6,60 @@
 
 import requests
 import time
+import queue
+import warnings
 
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
+from urllib3.exceptions import InsecureRequestWarning
 from colorama import Style, Fore
+
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.options import Options
 
 from IO import SaveReport
 from checks import Checks
 from verbose_print import PrintFoundLinks
 
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--log-level=3')
+chrome_options.add_argument('--disable-logging')
+
+driver = webdriver.Chrome(options=chrome_options)
+
+TheQueue = queue.Queue()
 visited_urls = set()
+Found_Links = set()
 Index = 1
+InsideTheLoop = False
+Socials = ["https://discord.gg", "https://github.com/", "https://twitter.com/", "https://www.tiktok.com/", "https://instagram.com/", "https://www.facebook.com/"]
 
 def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False,
-                  RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, HeadlessBrowser=False, ExternalVisits=False, DeepSearch=False, ExcludePaths=None):
+                  RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, HeadlessBrowser=False, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False):
     
     global Index
+    global InsideTheLoop
+    global TheBaseURL
+
+    warnings.filterwarnings("ignore", category=InsecureRequestWarning)
+
+    if InsideTheLoop is False:
+        TheBaseURL = url
+
+    if DebugInformation and not InsideTheLoop:
+        print(Fore.MAGENTA, f"""BaseURL: {TheBaseURL}
+URL: {url}
+Rate Limmit Time: {RateLimmitTime}s
+
+----- [ Command Line Arguments ] ------
+RateLimmit: {RateLimmit}
+IncludeSocials: {IncludeSocials}
+DeepSearch: {DeepSearch}
+DebugInformation: {DebugInformation}
+ExternalVisits: {ExternalVisits}""")
+        print(Style.RESET_ALL)
 
     soup = None
 
@@ -43,32 +81,85 @@ def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=Fal
     if Checks.QueryParameter(url, parsed_url, DeepSearch=DeepSearch, Verbose=verbose) is False:
         return
     
-    print(Fore.GREEN, f"({Index}) {url}", end=' ')
+    print(Fore.GREEN, f"({Index}) {url} [{Index}/{len(Found_Links)}] [{TheQueue.qsize()} left]")
     print(Style.RESET_ALL)
 
     if RateLimmit:
         time.sleep(RateLimmitTime)
 
     try:
-        res = requests.get(url)
+        res = requests.get(url, verify=False)
 
         if res.status_code == 200:
-            soup = BeautifulSoup(res.text, 'html.parser')
+            
+            driver.get(url)
+            wait = WebDriverWait(driver, 2)
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
 
         if soup and verbose:
             for anchor_tag in soup.find_all('a', href=True):
                 PrintFoundLinks(url, anchor_tag)
 
-        if soup and not ExternalVisits:
+        if soup:
+            FoundLinkCount = 0
             for link in soup.find_all('a', href=True):
                 next_url = urljoin(url, link['href'])
-                if next_url.startswith(url):
-                    ScrapeWebsite(next_url, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, 
-                  DeepSearch=DeepSearch)
+
+                if next_url.startswith("mailto:"):
+                    if verbose:
+                        print(Fore.YELLOW, f"Skipping {next_url} because 'mailto' links arent allowed")
+                        print(Style.RESET_ALL)
+                    continue
+                if next_url.startswith("javascript:"):
+                    if verbose:
+                        print(Fore.YELLOW, f"Skipping {next_url} because 'javascript' links arent allowed")
+                        print(Style.RESET_ALL)
+                    continue
+
+                if IncludeSocials is False:
+                    if any(next_url.startswith(social_link) for social_link in Socials):
+                        if verbose:
+                            print(Fore.YELLOW, f"Skipping {next_url}.")
+                            print(Style.RESET_ALL)
+                        continue
+
+
+                if next_url.startswith(TheBaseURL) and not ExternalVisits:
+                    if next_url not in visited_urls and next_url not in TheQueue.queue:
+                        TheQueue.put(next_url)
+                        Found_Links.add(next_url)
+                        FoundLinkCount += 1
+                if ExternalVisits is True:
+                    if next_url not in visited_urls and next_url not in TheQueue.queue:
+                        TheQueue.put(next_url)
+                        Found_Links.add(next_url)
+                        FoundLinkCount += 1
+
+            if verbose:
+                print(Fore.YELLOW, f"{FoundLinkCount} Links has been added to the Queue. | {TheQueue.qsize()} Links in the queue")
+                print(Style.RESET_ALL)
+
+            if InsideTheLoop is False:
+                InsideTheLoop = True
+                while not TheQueue.empty():
+                    next_link = TheQueue.get()
+                    ScrapeWebsite(next_link, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch)
+                if verbose:    
+                    print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
+                driver.quit()
         else:
             if verbose:
                 print(Fore.RED, f"The given URL \"{url}\" is invalid.", end=' ')
                 print(Style.RESET_ALL)
+
+            if InsideTheLoop is False:
+                InsideTheLoop = True
+                while not TheQueue.empty():
+                    next_link = TheQueue.get()
+                    ScrapeWebsite(next_link, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch)
+                if verbose:    
+                    print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
+                driver.quit()
                 
     except requests.exceptions.TooManyRedirects:
         print(Fore.RED, "Overloaded.")
