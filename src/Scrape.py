@@ -18,7 +18,7 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 
-from IO import SaveReport
+from IO import SaveReport, LoadSocialFilter
 from checks import Checks
 from verbose_print import PrintFoundLinks
 
@@ -26,6 +26,7 @@ chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--log-level=3')
 chrome_options.add_argument('--disable-logging')
+chrome_options.add_argument('--disable-dev-shm-usage')
 
 driver = webdriver.Chrome(options=chrome_options)
 
@@ -34,7 +35,7 @@ visited_urls = set()
 Found_Links = set()
 Index = 1
 InsideTheLoop = False
-Socials = ["https://discord.gg", "https://github.com/", "https://twitter.com/", "https://www.tiktok.com/", "https://instagram.com/", "https://www.facebook.com/"]
+Socials = []
 
 def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False,
                   RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, HeadlessBrowser=False, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False):
@@ -42,10 +43,13 @@ def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=Fal
     global Index
     global InsideTheLoop
     global TheBaseURL
+    global Socials
 
     warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
     if InsideTheLoop is False:
+        if IncludeSocials is False:
+            Socials = LoadSocialFilter()
         TheBaseURL = url
 
     if DebugInformation and not InsideTheLoop:
