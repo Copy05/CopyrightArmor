@@ -21,7 +21,8 @@ if __name__ == "__main__":
     parser.add_argument("-monitor", action="store_true", help="Enable monitoring mode")
     parser.add_argument("-ver", "--version", action="store_true", help="Print the version information")
     parser.add_argument("-url", "-link", "--site", help="he URL of the piracy website to scan. This option can be used multiple times to specify multiple websites.")
-    parser.add_argument("--report-file", action="store_true", help="Specify the report")
+    parser.add_argument("--report-file", action="store_true", help="Specify if there should be a report file when exiting")
+    parser.add_argument("--detailed-report", "-dr", action="store_true", help="Includes The Found Links List and Queue List within the report file.")
     parser.add_argument("--rate-limit", action="store_true", help="Set a rate limit for requests (requests per second) to avoid overloading websites.")
     parser.add_argument("--headless-browser", "--headless", help="Use a headless browser for website interaction and content detection.")
     parser.add_argument("--verbose", "-v", action="store_true", help="Increase verbosity for debugging purposes.")
@@ -35,6 +36,7 @@ if __name__ == "__main__":
     parser.add_argument("--external-visits", "-ev", action="store_true", help="Enables visiting sites that's outside the original website")
     parser.add_argument("--deep-search", "-ds", action="store_true", help="Enables deep search which also includes query paramters (.*?*=*)")
     parser.add_argument("--include-socials", "-is", action="store_true", help="Allows Social Media Links to scan")
+    parser.add_argument("--google", "-g", action="store_true", help="Optimizes the scraping engine for Google Search.")
     parser.add_argument("--exclude", help="Specifies a text file with all URLs to Exclude")
 
     args = parser.parse_args()
@@ -45,9 +47,15 @@ if __name__ == "__main__":
     if args.site:
         if not urlparse(args.site).scheme:
             args.site = "https://" + args.site
+        
+        if args.detailed_report and args.report_file is False:
+            print(Fore.RED, "Error: Invalid Argument: \"--detailed-report\" because \"--report_file\" is false")
+            print(Style.RESET_ALL)
+            exit(1)
 
     ScrapeWebsite(args.site, RateLimmit=args.rate_limit, verbose=args.verbose, ExternalVisits=args.external_visits, 
-                  DeepSearch=args.deep_search, ReportFile=args.report_file, ExcludePaths=args.exclude, IncludeSocials=args.include_socials, DebugInformation=args.debug)
+                  DeepSearch=args.deep_search, ReportFile=args.report_file, ExcludePaths=args.exclude, IncludeSocials=args.include_socials, DebugInformation=args.debug, 
+                  GoogleScrape=args.google, DetailedReport=args.detailed_report)
 
 
     if not any(vars(args).values()):

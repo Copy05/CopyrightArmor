@@ -38,7 +38,7 @@ InsideTheLoop = False
 Socials = []
 
 def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False,
-                  RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, HeadlessBrowser=False, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False):
+                  RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, HeadlessBrowser=False, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False, GoogleScrape=False, DetailedReport=False):
     
     global Index
     global InsideTheLoop
@@ -102,7 +102,11 @@ ExternalVisits: {ExternalVisits}""")
 
         if soup and verbose:
             for anchor_tag in soup.find_all('a', href=True):
+                foundurl = urljoin(url, anchor_tag['href'])
                 PrintFoundLinks(url, anchor_tag)
+                if GoogleScrape:
+                    if "sca_esv=" not in foundurl:
+                        Found_Links.add(foundurl)
 
         if soup:
             FoundLinkCount = 0
@@ -127,7 +131,6 @@ ExternalVisits: {ExternalVisits}""")
                             print(Style.RESET_ALL)
                         continue
 
-
                 if next_url.startswith(TheBaseURL) and not ExternalVisits:
                     if next_url not in visited_urls and next_url not in TheQueue.queue:
                         TheQueue.put(next_url)
@@ -151,6 +154,10 @@ ExternalVisits: {ExternalVisits}""")
                 if verbose:    
                     print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
                 driver.quit()
+                if ReportFile:
+                    SaveReport(visited_urls, detailed=DetailedReport, found_links=Found_Links)
+                    exit()
+
         else:
             if verbose:
                 print(Fore.RED, f"The given URL \"{url}\" is invalid.", end=' ')
@@ -164,18 +171,21 @@ ExternalVisits: {ExternalVisits}""")
                 if verbose:    
                     print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
                 driver.quit()
+                if ReportFile:
+                    SaveReport(visited_urls, detailed=DetailedReport, found_links=Found_Links)
+                    exit()
                 
     except requests.exceptions.TooManyRedirects:
         print(Fore.RED, "Overloaded.")
         print(Style.RESET_ALL)
 
         if ReportFile:
-            SaveReport(visited_urls)
+            SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
             exit()
 
     except KeyboardInterrupt:
         print("Exiting Scrape Mode.")
 
         if ReportFile:
-            SaveReport(visited_urls)
+            SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
             exit()
