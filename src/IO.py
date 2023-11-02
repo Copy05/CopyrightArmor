@@ -24,7 +24,7 @@ def extract_domain(url):
     parsed_url = urlparse(url)
     return parsed_url.netloc
 
-def SaveReport(URL: str, content: set, detailed : bool, found_links : set):
+def SaveReport(URL: str, content: set, detailed: bool, found_links: set):
     now = datetime.datetime.now()
     formatted_date = now.strftime("%m-%d-%y")
     milliseconds = int(time.time() * 1000)
@@ -39,7 +39,10 @@ def SaveReport(URL: str, content: set, detailed : bool, found_links : set):
     found_domains = {}
     with open(filename, 'w') as file:
         file.write(f"CopyrightArmor {formatted_date.replace('-', '/')} Report\nBase URL: {URL}\n\nScanned URLs ({len(content)}):\n")
-        for url in content:
+        
+        # Sort the URLs before writing them to the file
+        sorted_content = sorted(content)
+        for url in sorted_content:
             file.write(url + "\n")
             domain = extract_domain(url)
             if domain in domain_counts:
@@ -55,7 +58,10 @@ def SaveReport(URL: str, content: set, detailed : bool, found_links : set):
 
         if detailed:
             file.write(f"\nFound Links ({len(found_links)}):\n")
-            for link in found_links:
+            
+            # Sort the found_links before writing them to the file
+            sorted_found_links = sorted(found_links)
+            for link in sorted_found_links:
                 file.write(f"{link}\n")
                 domain = extract_domain(link)
                 if domain in found_domains:
