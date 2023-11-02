@@ -30,17 +30,19 @@ Found_Links = set()
 Index = 1
 CookieBannerClicked = False
 
-MORE_RESULTS_BUTTON_XPATHS = ["//*[@id='botstuff']/div/div[3]/div[4]/a[1]/h3/div", "//*[@id='kp-wp-tab-cont-overview']/div/div[2]/div/div/div[4]/a[1]/h3/div"]
+MORE_RESULTS_BUTTON_XPATHS = ["//*[@id='botstuff']/div/div[3]/div[4]/a[1]/h3/div", "//*[@id='kp-wp-tab-cont-overview']/div/div[2]/div/div/div[4]/a[1]/h3/div", "//*[@id='kp-wp-tab-cont-overview']/div/div[2]/div/div/div[4]/a[2]/h3/span"]
 
 def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateLimmitTime=2):
     
     global CookieBannerClicked
 
-    URL = f"https://google.com/search?q={Query}&cs=0&filter=0"
+    URL = f"https://google.com/search?q={Query}&cs=0&filter=0&safe=off&nfpr=1"
 
     warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
     soup = None
+    MAXIMAL_RETRIES = 5
+    Retries = 0
 
     if RateLimmit:
         time.sleep(RateLimmitTime)
@@ -84,6 +86,7 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
             while True:
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 FoundLinkCount = 0
+                FoundAnyLinks = False
 
                 for link in soup.find_all('a', href=True):
                     if verbose:
@@ -92,6 +95,7 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
                     if next_url not in Found_Links and "google.com" not in next_url:
                         Found_Links.add(next_url)
                         FoundLinkCount += 1
+                        FoundAnyLinks = True
 
                 if CookieBannerClicked is False:
                     try:
@@ -99,7 +103,7 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
                         decline_button = cookie_banner.find_element(By.XPATH, "//*[@id='W0wltc']/div")
                         decline_button.click()
                         CookieBannerClicked = True
-                    except Exception as e:
+                    except Exception:
                         print(Fore.RED, f"Cookie Banner Not Found")
                         print(Style.RESET_ALL)
                         pass
@@ -112,22 +116,38 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
                         print(Fore.YELLOW, f"{FoundLinkCount} Links has been added to the List. | {len(Found_Links)} Links in the List")
                         print(Style.RESET_ALL)
 
+                    for _ in range(10):  
+                        driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+
+                    if not FoundAnyLinks:
+                        Retries += 1
+                    else:
+                        Retries = 0
+
+                    if Retries > MAXIMAL_RETRIES:
+                        break
+
+                    # The "More Results Button" has multiple XPATHS
                     for xpath in MORE_RESULTS_BUTTON_XPATHS:
                         try:
-                            more_results_button = WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.XPATH, xpath)))
+                            more_results_button = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, xpath)))
                             more_results_button.click()
                             break
                         except Exception:
                             pass    
 
-                except Exception as e:
+                except Exception:
                     for _ in range(10):  
                         driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
-
-                    print(Fore.RED, f"More Results Button Not Found")
-                    print(Style.RESET_ALL)
                     pass
-        
+
+            print(f"Query: {Query}\nFound Links: {len(Found_Links)}")
+            if ReportFile:
+                SaveReport(URL=f"Google_Search_{Query}", content=Found_Links, detailed=False, found_links=Found_Links)
+                exit()
+
+            
+
     except requests.exceptions.TooManyRedirects:
         print(Fore.RED, "Overloaded.")
         print(Style.RESET_ALL)
