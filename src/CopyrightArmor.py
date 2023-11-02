@@ -1,6 +1,5 @@
 import argparse
 from colorama import Style, Fore
-from Scrape import ScrapeWebsite
 from urllib.parse import urlparse
 
 def PrintVersion():
@@ -24,12 +23,11 @@ if __name__ == "__main__":
     parser.add_argument("--report-file", action="store_true", help="Specify if there should be a report file when exiting")
     parser.add_argument("--detailed-report", "-dr", action="store_true", help="Includes The Found Links List and Queue List within the report file.")
     parser.add_argument("--rate-limit", action="store_true", help="Set a rate limit for requests (requests per second) to avoid overloading websites.")
-    parser.add_argument("--headless-browser", "--headless", help="Use a headless browser for website interaction and content detection.")
     parser.add_argument("--verbose", "-v", action="store_true", help="Increase verbosity for debugging purposes.")
     parser.add_argument("--debug", action="store_true", help="Enables Debug Informations for Debug purposes")
     parser.add_argument("--file-types", help="Specify file types/extensions to look for (e.g., .mp3, .mp4, .pdf).")
     parser.add_argument("--keyword", help="Provide keywords or phrases to identify pirated content.")
-    parser.add_argument("--proxy", "-p", help="Use a proxy server for anonymized scanning (if necessary).")
+    parser.add_argument("--proxy", "-p", action="store_true", help="Use a proxy server for anonymized scanning (if necessary).")
     parser.add_argument("--user-agent", "-ua", help="Specify a custom User-Agent header for HTTP requests (to mimic different user agents).")
     parser.add_argument("--ignore-robots-txt", "--no-robots-txt", help="Ignore the 'robots.txt' file, which is used to control web crawlers.")
     parser.add_argument("--depth", "-d", help="Specify how deep the tool should crawl the website (number of levels).")
@@ -44,7 +42,32 @@ if __name__ == "__main__":
     if args.version:
         PrintVersion()
 
+    if args.depth or args.proxy or args.ignore_robots_txt or args.file_types or args.monitor or args.user_agent:
+        unimplemented_args = []
+        if args.depth:
+            unimplemented_args.append("depth")
+        if args.proxy:
+            unimplemented_args.append("proxy")
+        if args.ignore_robots_txt:
+            unimplemented_args.append("ignore_robots_txt")
+        if args.file_types:
+            unimplemented_args.append("file_types")
+        if args.monitor:
+            unimplemented_args.append("monitor")
+        if args.user_agent:
+            unimplemented_args.append("user_agent")
+
+        unimplemented_args_str = ", ".join(unimplemented_args)
+    
+        print(Fore.RED, f"ImplementationError: The argument(s) {unimplemented_args_str} is/are not implemented yet")
+        print(Style.RESET_ALL)
+        exit(1)
+
     if args.site:
+
+        # To Avoid Long Execution Time when not using the scraping engine.
+        from Scrape import ScrapeWebsite
+
         if not urlparse(args.site).scheme:
             args.site = "https://" + args.site
         
@@ -53,7 +76,7 @@ if __name__ == "__main__":
             print(Style.RESET_ALL)
             exit(1)
 
-    ScrapeWebsite(args.site, RateLimmit=args.rate_limit, verbose=args.verbose, ExternalVisits=args.external_visits, 
+        ScrapeWebsite(args.site, RateLimmit=args.rate_limit, verbose=args.verbose, ExternalVisits=args.external_visits, 
                   DeepSearch=args.deep_search, ReportFile=args.report_file, ExcludePaths=args.exclude, IncludeSocials=args.include_socials, DebugInformation=args.debug, 
                   GoogleScrape=args.google, DetailedReport=args.detailed_report)
 

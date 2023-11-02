@@ -38,7 +38,7 @@ InsideTheLoop = False
 Socials = []
 
 def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False,
-                  RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, HeadlessBrowser=False, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False, GoogleScrape=False, DetailedReport=False):
+                  RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False, GoogleScrape=False, DetailedReport=False):
     
     global Index
     global InsideTheLoop
@@ -155,7 +155,7 @@ ExternalVisits: {ExternalVisits}""")
                     print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
                 driver.quit()
                 if ReportFile:
-                    SaveReport(visited_urls, detailed=DetailedReport, found_links=Found_Links)
+                    SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
                     exit()
 
         else:
@@ -172,7 +172,7 @@ ExternalVisits: {ExternalVisits}""")
                     print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
                 driver.quit()
                 if ReportFile:
-                    SaveReport(visited_urls, detailed=DetailedReport, found_links=Found_Links)
+                    SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
                     exit()
                 
     except requests.exceptions.TooManyRedirects:

@@ -1,5 +1,4 @@
 from colorama import Style, Fore
-from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
 def PrintFoundLinks(original_url : str, link):

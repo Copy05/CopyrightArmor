@@ -9,7 +9,6 @@ import time
 import os
 import tempfile
 import json
-import queue
 
 from urllib.parse import urlparse
 

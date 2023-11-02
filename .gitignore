@@ -2,7 +2,6 @@
 .vscode
 .idea
 __pycache__/
-docs
 
 # Files
 **/report_*.txt
