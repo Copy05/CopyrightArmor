@@ -27,7 +27,7 @@ def SaveReport(URL: str, content: set, detailed: bool, found_links: set):
     now = datetime.datetime.now()
     formatted_date = now.strftime("%m-%d-%y")
     milliseconds = int(time.time() * 1000)
-    sanitized_url = URL.replace('https://', '').replace('/', '-').replace('.', '-')
+    sanitized_url = URL.replace('https://', '').replace('/', '-').replace('.', '-').replace('+', '-').replace(':', '')
     filename = f"CA_report_{sanitized_url}_{formatted_date}_{milliseconds}.txt"
 
     if os.name == 'nt':

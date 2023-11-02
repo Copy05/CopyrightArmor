@@ -16,11 +16,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from IO import SaveReport
-from checks import Checks
 from verbose_print import PrintFoundLinks
 
 chrome_options = Options()
-#chrome_options.add_argument('--headless')
+chrome_options.add_argument('--headless')
 chrome_options.add_argument('--log-level=3')
 chrome_options.add_argument('--disable-logging')
 chrome_options.add_argument('--disable-dev-shm-usage')
@@ -31,19 +30,17 @@ Found_Links = set()
 Index = 1
 CookieBannerClicked = False
 
+MORE_RESULTS_BUTTON_XPATHS = ["//*[@id='botstuff']/div/div[3]/div[4]/a[1]/h3/div", "//*[@id='kp-wp-tab-cont-overview']/div/div[2]/div/div/div[4]/a[1]/h3/div"]
+
 def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateLimmitTime=2):
     
-    global Index
     global CookieBannerClicked
 
-    URL = f"https://google.com/search?q={Query}"
+    URL = f"https://google.com/search?q={Query}&cs=0&filter=0"
 
     warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
     soup = None
-    
-    print(Fore.GREEN, f"({Index}) {URL} [{Index}/{len(Found_Links)}]")
-    print(Style.RESET_ALL)
 
     if RateLimmit:
         time.sleep(RateLimmitTime)
@@ -85,8 +82,12 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
                 print(Style.RESET_ALL)
 
             while True:
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
                 FoundLinkCount = 0
+
                 for link in soup.find_all('a', href=True):
+                    if verbose:
+                        PrintFoundLinks(URL, link)
                     next_url = urljoin(URL, link['href'])
                     if next_url not in Found_Links and "google.com" not in next_url:
                         Found_Links.add(next_url)
@@ -104,24 +105,27 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
                         pass
 
                 try:
-                    print(Fore.GREEN, f"({Index}) Searching [Links Found: {len(Found_Links)}]")
+                    print(Fore.GREEN, f"Searching [Links Found: {len(Found_Links)}]")
                     print(Style.RESET_ALL)
-
-                    more_results_button = WebDriverWait(driver, 4).until(EC.element_to_be_clickable((By.XPATH, "//*[@id='botstuff']/div/div[3]/div[4]/a[1]/h3/div")))
-                    more_results_button.click()
-                    Index += 1
-                    soup = BeautifulSoup(driver.page_source, 'html.parser')
 
                     if verbose:
                         print(Fore.YELLOW, f"{FoundLinkCount} Links has been added to the List. | {len(Found_Links)} Links in the List")
                         print(Style.RESET_ALL)
 
+                    for xpath in MORE_RESULTS_BUTTON_XPATHS:
+                        try:
+                            more_results_button = WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.XPATH, xpath)))
+                            more_results_button.click()
+                            break
+                        except Exception:
+                            pass    
+
                 except Exception as e:
                     for _ in range(10):  
                         driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+
                     print(Fore.RED, f"More Results Button Not Found")
                     print(Style.RESET_ALL)
-                    soup = BeautifulSoup(driver.page_source, 'html.parser')
                     pass
         
     except requests.exceptions.TooManyRedirects:
@@ -129,13 +133,12 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
         print(Style.RESET_ALL)
 
         if ReportFile:
-            SaveReport(URL=f"Google Search: {Query}", content=Found_Links, detailed=False, found_links=None)
+            SaveReport(URL=f"Google_Search_{Query}", content=Found_Links, detailed=False, found_links=Found_Links)
             exit()
 
     except KeyboardInterrupt:
         print("Exiting Scrape Mode.")
 
         if ReportFile:
-            SaveReport(URL=f"Google Search: {Query}", content=Found_Links, detailed=False, found_links=None)
+            SaveReport(URL=f"Google_Search_{Query}", content=Found_Links, detailed=False, found_links=Found_Links)
             exit()
-    
