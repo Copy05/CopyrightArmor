@@ -6,7 +6,7 @@
 # Features
 - **Web Scraping Engine**: CopyrightArmor uses a robust web scraping engine to crawl and analyze websites for potentially infringing content.
 - **Recursive Scrapping**: Recursively scans websites.
-- **Google Optimized**: by using `--google` the scraping engine will be optimized for Google Search
+- **Google Optimized**: by using `--google` and `--google-search` without `-url` the web scraping engine will be optimized for Google Search.
 - **Flexible**: You can configurate how and what type of links it should scrape:
     - Exclude Social Media Links
     - Exclude Query parameter links

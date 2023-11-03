@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-monitor", action="store_true", help="Enable monitoring mode")
     parser.add_argument("-ver", "--version", action="store_true", help="Print the version information")
-    parser.add_argument("-url", "-link", "--site", help="he URL of the piracy website to scan. This option can be used multiple times to specify multiple websites.")
+    parser.add_argument("-url", "-link", "--site", help="specifies the URL of the piracy website to scan. This option can be used multiple times to specify multiple websites.")
     parser.add_argument("--report-file", action="store_true", help="Specify if there should be a report file when exiting")
     parser.add_argument("--detailed-report", "-dr", action="store_true", help="Includes The Found Links List and Queue List within the report file.")
     parser.add_argument("--rate-limit", action="store_true", help="Set a rate limit for requests (requests per second) to avoid overloading websites.")
@@ -35,6 +35,7 @@ if __name__ == "__main__":
     parser.add_argument("--deep-search", "-ds", action="store_true", help="Enables deep search which also includes query paramters (.*?*=*)")
     parser.add_argument("--include-socials", "-is", action="store_true", help="Allows Social Media Links to scan")
     parser.add_argument("--google", "-g", action="store_true", help="Optimizes the scraping engine for Google Search.")
+    parser.add_argument("--google-search", help="Uses the Google Search Webscrapping engine.")
     parser.add_argument("--exclude", help="Specifies a text file with all URLs to Exclude")
 
     args = parser.parse_args()
@@ -79,6 +80,19 @@ if __name__ == "__main__":
         ScrapeWebsite(args.site, RateLimmit=args.rate_limit, verbose=args.verbose, ExternalVisits=args.external_visits, 
                   DeepSearch=args.deep_search, ReportFile=args.report_file, ExcludePaths=args.exclude, IncludeSocials=args.include_socials, DebugInformation=args.debug, 
                   GoogleScrape=args.google, DetailedReport=args.detailed_report)
+
+
+    if args.google and not args.site:
+
+        # To Avoid Long Execution Time when not using the scraping engine.
+        from GoogleScrape import GoogleScrape
+
+        if args.detailed_report and args.report_file is False:
+            print(Fore.RED, "Error: Invalid Argument: \"--detailed-report\" because \"--report_file\" is false")
+            print(Style.RESET_ALL)
+            exit(1)
+
+        GoogleScrape(Query=args.google_search, RateLimmit=args.rate_limit, verbose=args.verbose, ReportFile=args.report_file)
 
 
     if not any(vars(args).values()):

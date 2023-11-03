@@ -7,7 +7,7 @@ CopyrightArmor is very flexible to use by using it's command line arguments effi
 python CopyrightArmor.py -url entertainmasters.github.io --rate-limit
 ```
 
-**Required Arguments**
+**Arguments**
 - `-url` **REQUIRED:** Specifies the Start URL to scan
 
 **Security Arguments**
@@ -24,6 +24,7 @@ python CopyrightArmor.py -url entertainmasters.github.io --rate-limit
 
 **Optimisation Arguments**
 - `--google` optimizes the scraping engine for google search
+- `--google-search` specifies a query to search. (ONLY WORKS WITHOUT `-url`)
 
 **Report File Arguments**
 - `--report-file` when exiting the app it outputs a file containing the scanned urls and domains. On Windows it gets outputed inside the TEMP folder.
