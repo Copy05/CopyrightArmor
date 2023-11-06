@@ -37,7 +37,7 @@ Index = 1
 InsideTheLoop = False
 Socials = []
 
-def ScrapeWebsite(url, depth=1, verbose=False, MonitorMode=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False,
+def ScrapeWebsite(url, depth=None, verbose=False, MonitorMode=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False,
                   RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False, GoogleScrape=False, DetailedReport=False):
     
     global Index
@@ -69,6 +69,12 @@ ExternalVisits: {ExternalVisits}""")
 
     if url in visited_urls:
         return
+
+    if depth is not None and depth <= 0:
+        return
+    
+    if depth is not None:
+        depth -= 1
      
     visited_urls.add(url)
     Index += 1
@@ -150,7 +156,7 @@ ExternalVisits: {ExternalVisits}""")
                 InsideTheLoop = True
                 while not TheQueue.empty():
                     next_link = TheQueue.get()
-                    ScrapeWebsite(next_link, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch)
+                    ScrapeWebsite(next_link, depth=depth, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch)
                 if verbose:    
                     print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
                 driver.quit()
@@ -167,7 +173,7 @@ ExternalVisits: {ExternalVisits}""")
                 InsideTheLoop = True
                 while not TheQueue.empty():
                     next_link = TheQueue.get()
-                    ScrapeWebsite(next_link, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch)
+                    ScrapeWebsite(next_link, depth=depth, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch)
                 if verbose:    
                     print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
                 driver.quit()

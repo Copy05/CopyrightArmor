@@ -30,7 +30,7 @@ if __name__ == "__main__":
     parser.add_argument("--proxy", "-p", action="store_true", help="Use a proxy server for anonymized scanning (if necessary).")
     parser.add_argument("--user-agent", "-ua", help="Specify a custom User-Agent header for HTTP requests (to mimic different user agents).")
     parser.add_argument("--ignore-robots-txt", "--no-robots-txt", help="Ignore the 'robots.txt' file, which is used to control web crawlers.")
-    parser.add_argument("--depth", "-d", help="Specify how deep the tool should crawl the website (number of levels).")
+    parser.add_argument("--depth", "-d", type=int, help="Specify how deep the tool should crawl the website (number of levels).")
     parser.add_argument("--external-visits", "-ev", action="store_true", help="Enables visiting sites that's outside the original website")
     parser.add_argument("--deep-search", "-ds", action="store_true", help="Enables deep search which also includes query paramters (.*?*=*)")
     parser.add_argument("--include-socials", "-is", action="store_true", help="Allows Social Media Links to scan")
@@ -43,10 +43,8 @@ if __name__ == "__main__":
     if args.version:
         PrintVersion()
 
-    if args.depth or args.proxy or args.ignore_robots_txt or args.file_types or args.monitor or args.user_agent:
+    if args.proxy or args.ignore_robots_txt or args.file_types or args.monitor or args.user_agent:
         unimplemented_args = []
-        if args.depth:
-            unimplemented_args.append("depth")
         if args.proxy:
             unimplemented_args.append("proxy")
         if args.ignore_robots_txt:
@@ -77,7 +75,7 @@ if __name__ == "__main__":
             print(Style.RESET_ALL)
             exit(1)
 
-        ScrapeWebsite(args.site, RateLimmit=args.rate_limit, verbose=args.verbose, ExternalVisits=args.external_visits, 
+        ScrapeWebsite(args.site, depth=args.depth, RateLimmit=args.rate_limit, verbose=args.verbose, ExternalVisits=args.external_visits, 
                   DeepSearch=args.deep_search, ReportFile=args.report_file, ExcludePaths=args.exclude, IncludeSocials=args.include_socials, DebugInformation=args.debug, 
                   GoogleScrape=args.google, DetailedReport=args.detailed_report)
 
