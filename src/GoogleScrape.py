@@ -49,12 +49,19 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
 
     try:
         res = requests.get(URL, verify=False)
-
         if res.status_code == 200:
             driver.get(URL)
             wait = WebDriverWait(driver, 2)
             soup = BeautifulSoup(driver.page_source, 'html.parser')
 
+        if res.status_code == 429:
+            if 'Retry-After' in res.headers:
+                print(Fore.RED, f"429 Too Many Requests. | You've send too many requests to Google. Please try in {res.headers['Retry-After']} seconds again!")
+            else:
+                print(Fore.RED, f"429 Too Many Requests. | You've send too many requests to Google. Please try later again!")
+                
+            print(Style.RESET_ALL)
+            exit(0)
         if soup and verbose:
             for anchor_tag in soup.find_all('a', href=True):
                 PrintFoundLinks(URL, anchor_tag)
@@ -145,8 +152,6 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
             if ReportFile:
                 SaveReport(URL=f"Google_Search_{Query}", content=Found_Links, detailed=False, found_links=Found_Links)
                 exit()
-
-            
 
     except requests.exceptions.TooManyRedirects:
         print(Fore.RED, "Overloaded.")
