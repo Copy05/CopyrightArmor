@@ -119,14 +119,9 @@ ExternalVisits: {ExternalVisits}""")
             for link in soup.find_all('a', href=True):
                 next_url = urljoin(url, link['href'])
 
-                if next_url.startswith("mailto:"):
+                if next_url.startswith("javascript:") or next_url.startswith("mailto:") or next_url.startswith("tel:"):
                     if verbose:
-                        print(Fore.YELLOW, f"Skipping {next_url} because 'mailto' links arent allowed")
-                        print(Style.RESET_ALL)
-                    continue
-                if next_url.startswith("javascript:"):
-                    if verbose:
-                        print(Fore.YELLOW, f"Skipping {next_url} because 'javascript' links arent allowed")
+                        print(Fore.YELLOW, f"Skipping {next_url} because these types of links arent allowed")
                         print(Style.RESET_ALL)
                     continue
 
