@@ -37,6 +37,7 @@ if __name__ == "__main__":
     parser.add_argument("--google", "-g", action="store_true", help="Optimizes the scraping engine for Google Search.")
     parser.add_argument("--google-search", help="Uses the Google Search Webscrapping engine.")
     parser.add_argument("--exclude", help="Specifies a text file with all URLs to Exclude")
+    parser.add_argument("--ignore-ssl", "-no-ssl", action="store_true", help="Ignores all SSL Checks which may be unsecure in some sites.")
 
     args = parser.parse_args()
 
@@ -77,7 +78,7 @@ if __name__ == "__main__":
 
         ScrapeWebsite(args.site, depth=args.depth, RateLimmit=args.rate_limit, verbose=args.verbose, ExternalVisits=args.external_visits, 
                   DeepSearch=args.deep_search, ReportFile=args.report_file, ExcludePaths=args.exclude, IncludeSocials=args.include_socials, DebugInformation=args.debug, 
-                  GoogleScrape=args.google, DetailedReport=args.detailed_report)
+                  GoogleScrape=args.google, DetailedReport=args.detailed_report, IgnoreSSL=args.ignore_ssl)
 
 
     if args.google and not args.site:

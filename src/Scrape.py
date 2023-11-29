@@ -12,6 +12,7 @@ import warnings
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from urllib3.exceptions import InsecureRequestWarning
+from requests.exceptions import SSLError
 from colorama import Style, Fore
 
 from selenium import webdriver
@@ -36,18 +37,22 @@ Found_Links = set()
 Index = 1
 InsideTheLoop = False
 Socials = []
+ignore_ssl = False
 
-def ScrapeWebsite(url, depth=None, verbose=False, MonitorMode=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False,
+def ScrapeWebsite(url, depth=None, verbose=False, MonitorMode=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False, IgnoreSSL=False,
                   RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False, GoogleScrape=False, DetailedReport=False):
     
     global Index
     global InsideTheLoop
     global TheBaseURL
     global Socials
+    global ignore_ssl
 
     warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
     if InsideTheLoop is False:
+        if IgnoreSSL is True:
+            ignore_ssl = not IgnoreSSL
         if IncludeSocials is False:
             Socials = LoadSocialFilter()
         TheBaseURL = url
@@ -62,6 +67,7 @@ RateLimmit: {RateLimmit}
 IncludeSocials: {IncludeSocials}
 DeepSearch: {DeepSearch}
 DebugInformation: {DebugInformation}
+Ignore SSL: {IgnoreSSL} (verify={ignore_ssl})
 ExternalVisits: {ExternalVisits}""")
         print(Style.RESET_ALL)
 
@@ -98,7 +104,7 @@ ExternalVisits: {ExternalVisits}""")
         time.sleep(RateLimmitTime)
 
     try:
-        res = requests.get(url, verify=False)
+        res = requests.get(url, verify=ignore_ssl)
 
         if res.status_code == 200:
             
@@ -175,7 +181,20 @@ ExternalVisits: {ExternalVisits}""")
                 if ReportFile:
                     SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
                     exit()
-                
+    
+    except SSLError:
+        print(Fore.RED, f"URL: {url} has not a valid SSL Certificate. Skipping.")
+        print(Style.RESET_ALL)
+        pass
+
+    except requests.exceptions.ConnectionError:
+        print(Fore.RED, f"There is a issue with connecting to the site: {url}")
+        print(Style.RESET_ALL)
+
+        if ReportFile:
+            SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
+            exit()
+
     except requests.exceptions.TooManyRedirects:
         print(Fore.RED, "Overloaded.")
         print(Style.RESET_ALL)

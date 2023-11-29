@@ -48,7 +48,7 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
         time.sleep(RateLimmitTime)
 
     try:
-        res = requests.get(URL, verify=False)
+        res = requests.get(URL)
         if res.status_code == 200:
             driver.get(URL)
             wait = WebDriverWait(driver, 2)
