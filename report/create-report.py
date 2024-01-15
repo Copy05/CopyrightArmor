@@ -50,10 +50,14 @@ def main():
 
     if confirm == 1:
         ClearTerminal()
-        default_filename = generate_unique_filename(f"{GetDate()}-{copyright_owner}", ".txt")
+        filtered_company_name = copyright_owner.replace(" ", "-")
+        default_filename = generate_unique_filename(f"{GetDate()}-{filtered_company_name}", ".txt")
         filename = input_with_default("Enter the filename", default_filename)
         SaveReport(filename, letter)
+        ClearTerminal()
+        exit()
     elif confirm == 2:
+        ClearTerminal()
         exit()
 
 if __name__ == "__main__":

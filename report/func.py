@@ -85,7 +85,7 @@ def GetColoredInput(prompt):
 
 def input_with_default(prompt, default):
     user_input = input(f"{prompt} ({default}): ")
-    return user_input if user_input else default
+    return user_input + ".txt" if user_input else default
 
 
 def generate_unique_filename(base_name, extension):
