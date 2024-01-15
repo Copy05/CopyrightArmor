@@ -11,6 +11,7 @@
     - Exclude Social Media Links
     - Exclude Query parameter links
     - Exclude External Links
+- **Generate DMCA Takedown Letters**: by using `create-report.py` inside the `report` directory.
 - **Detailed Reports**: Generate detailed reports of scanned URLs and domain statistics to keep records of your scanning activities:
 ```
 CopyrightArmor 10/30/23 Report
@@ -49,14 +50,14 @@ pip install -r requirements.txt
 
 **To see how much piracy happened on the internet here is a graph:**
 
-| Catagory              | URLs         |
-|-----------------------|--------------|
-| MG Premium LTD (Aylo) | +992,671,418 |
-| Music                 | +742,100,209 |
-| Movies / Television   | +741,019,179 |
-| Webtoons              | +711,855,406 |
-| Anime                 | +443,879,761 |
-| Manga                 | +195,188,170 |
-| Models                | +167,086,838 |
-| XXX                   | +11,971,422  |
-| WGCZ (BangBros)       | +11,355,801  |
+| Catagory              | URLs              |
+|-----------------------|-------------------|
+| MG Premium LTD (Aylo) | +1,092,671,418    |
+| Music                 | +742,100,209      |
+| Movies / Television   | +741,019,179      |
+| Webtoons              | +711,855,406      |
+| Anime                 | +443,879,761      |
+| Manga                 | +195,188,170      |
+| Models                | +167,086,838      |
+| XXX                   | +11,971,422       |
+| WGCZ (BangBros)       | +11,355,801       |
