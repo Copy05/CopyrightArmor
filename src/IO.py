@@ -23,6 +23,7 @@ import time
 import os
 import tempfile
 import json
+import calendar
 
 from urllib.parse import urlparse
 
@@ -37,9 +38,9 @@ def extract_domain(url):
     parsed_url = urlparse(url)
     return parsed_url.netloc
 
-def SaveReport(URL: str, content: set, detailed: bool, found_links: set):
+def SaveReport(URL: str, content: set, infriding_urls: set, settings_string : str, image_data : list[dict], scanned_images : set):
     now = datetime.datetime.now()
-    formatted_date = now.strftime("%m-%d-%y")
+    formatted_date = now.strftime("%y-%m-%d")
     milliseconds = int(time.time() * 1000)
     sanitized_url = URL.replace('https://', '').replace('/', '-').replace('.', '-').replace('+', '-').replace(':', '')
     filename = f"CA_report_{sanitized_url}_{formatted_date}_{milliseconds}.txt"
@@ -49,9 +50,35 @@ def SaveReport(URL: str, content: set, detailed: bool, found_links: set):
         filename = os.path.join(temp_dir, filename)
 
     domain_counts = {}
-    found_domains = {}
     with open(filename, 'w') as file:
-        file.write(f"CopyrightArmor {formatted_date.replace('-', '/')} Report\nBase URL: {URL}\n\nScanned URLs ({len(content)}):\n")
+
+        sorted_content = sorted(content)
+        for url in sorted_content:
+            domain = extract_domain(url)
+            if domain in domain_counts:
+                domain_counts[domain].add(url)
+            else:
+                domain_counts[domain] = {url}
+
+        file.write("-----------------------------------------------------------------------\n")
+        file.write("CopyrightArmor Scan Report\n")
+        file.write("-----------------------------------------------------------------------\n\n")   
+        file.write(f"Base (Start) URL: {URL}\n")
+        file.write(f"Scan Date: {formatted_date.replace('-', '/')} {time.strftime('%H:%M:%S', time.gmtime())}\n")
+        file.write(f"Scan Settings: {settings_string}\n")
+        file.write("\n-----------------------------------------------\n")   
+        file.write("Summary\n")
+        file.write("-----------------------------------------------\n\n")   
+        file.write(f"Total Websites Scanned: {len(content)}\n")
+        file.write(f"Total Domains Scanned: {len(domain_counts)}\n")
+        file.write(f"Total Images Scanned: {len(scanned_images)}\n")
+        file.write(f"Total Infringing Content Found: {len(infriding_urls)}\n")
+        file.write("\n-----------------------------------------------\n")   
+        file.write("Scan Report:\n")
+        file.write("-----------------------------------------------\n\n")   
+        file.write("Scanned URLs:\n")
+
+        # ------------------------------------------------------- #
         
         # Sort the URLs before writing them to the file
         sorted_content = sorted(content)
@@ -63,29 +90,37 @@ def SaveReport(URL: str, content: set, detailed: bool, found_links: set):
             else:
                 domain_counts[domain] = {url}
 
+        
+        # ------------------------------------------------------- #
+        
+        file.write("\n-----------------------------------------------\n")   
+        file.write(f"Scanned Domains {len(domain_counts)}:\n")
+        file.write("-----------------------------------------------\n\n") 
+
+        # ------------------------------------------------------- #
+        
         # Prints a list of how many of which domain has been scanned
-        file.write(f"\nScanned Domains ({len(domain_counts)}):\n")
         sorted_domains = sorted(domain_counts.items(), key=lambda x: len(x[1]), reverse=True)
         for domain, urls in sorted_domains:
             file.write(f"{domain} - {len(urls)} URLs\n")
 
-        if detailed:
-            file.write(f"\nFound Links ({len(found_links)}):\n")
-            
-            # Sort the found_links before writing them to the file
-            sorted_found_links = sorted(found_links)
-            for link in sorted_found_links:
-                file.write(f"{link}\n")
-                domain = extract_domain(link)
-                if domain in found_domains:
-                    found_domains[domain].add(link)
-                else:
-                    found_domains[domain] = {link}
+        # --------------------------------------------------------------- #
+                
+        file.write("\n-----------------------------------------------\n")   
+        file.write("Details:\n")
+        file.write("-----------------------------------------------\n\n") 
 
-            # Prints a list of how many of which domain has been FOUND
-            file.write(f"\nFound Domains ({len(found_domains)}):\n")
-            sorted_domains = sorted(found_domains.items(), key=lambda x: len(x[1]), reverse=True)
-            for domain, urls in sorted_domains:
-                file.write(f"{domain} - {len(urls)} URLs\n")
+        infriding_count = 1
+
+        if infriding_urls:
+            for data in image_data:
+                file.write(f"{infriding_count}. URL: {data.get('url')}\n")
+                file.write(f"Type: {data.get('type')}\n")
+                file.write(f"Description: {data.get('description')}\n")
+                file.write(f"Original Source: {data.get('original_url')}\n")
+                file.write(f"Copyright Owner: {data.get('copyright_owner')}\n\n")
+                infriding_count += 1
+        else:
+            file.write("No infriding content has been found.\n")
 
     print(f"File Saved under: {filename}")

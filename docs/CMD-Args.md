@@ -28,7 +28,6 @@ python CopyrightArmor.py -url entertainmasters.github.io --rate-limit
 
 **Report File Arguments**
 - `--report-file` when exiting the app it outputs a file containing the scanned urls and domains. On Windows it gets outputed inside the TEMP folder.
-- `--detailed-report` Includes the `found_links` and `TheQueue` in the report file
 
 
 

@@ -4,6 +4,7 @@
 **CopyrightArmor** is a tool that scans and detects for pirated content for special research or to takedown. We aim for decentralisation and independence of DMCA Reporting Agencies.
 
 # Features
+- **Detecting Stolen Images**: CopyrightArmor detects stolen images by matching md5 "hashes"
 - **Web Scraping Engine**: CopyrightArmor uses a robust web scraping engine to crawl and analyze websites for potentially infringing content.
 - **Recursive Scrapping**: Recursively scans websites.
 - **Google Optimized**: by using `--google` and `--google-search` without `-url` the web scraping engine will be optimized for Google Search.
@@ -27,7 +28,6 @@ Scanned Domains (2):
 www.iana.org - 4 URLs
 example.com - 1 URLs
 ```
-Even more detailed with the `--detailed-report` argument
 
 # Installations
 
@@ -44,6 +44,26 @@ cd CopyrightArmor
 3. Install the required dependencies using pip:
 ```
 pip install -r requirements.txt
+```
+
+4. Open up `src/hashes.json` and add all content that you want to scan for and use this syntax:
+```json
+{
+    "images": [
+        {
+            "original_url": "https://t3.ftcdn.net/jpg/05/41/71/02/360_F_541710260_3qZwn627nHyHA99xIktU7tKotn93YGjw.jpg",
+            "copyright_owner": "Example Corp.",
+            "hash": "71358d8c3c00d0d3b757e7431843f389",
+            "description": "A Pink Cherry Tree"
+        },
+        {
+            "original_url": "https://t3.ftcdn.net/jpg/05/41/71/02/361_F_541710260_3qZwn627nHyHA99xIktU7tKotn93YGjw.jpg",
+            "copyright_owner": "Example Corperation.",
+            "hash": "71358d8c3c00d0d3b757e7431843f3u9",
+            "description": "Another Pink Cherry Tree"
+        },
+    ]
+}
 ```
 
 # Most Targetted Copyright Owners

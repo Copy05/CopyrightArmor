@@ -22,6 +22,8 @@ import requests
 import time
 import queue
 import warnings
+import hashlib
+import json
 
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
@@ -33,9 +35,10 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 
-from IO import SaveReport, LoadSocialFilter
+from IO import SaveReport, LoadSocialFilter, extract_domain
 from checks import Checks
 from verbose_print import PrintFoundLinks
+from utils import GetSettings
 
 chrome_options = Options()
 chrome_options.add_argument('--headless')
@@ -48,6 +51,8 @@ driver = webdriver.Chrome(options=chrome_options)
 TheQueue = queue.Queue()
 visited_urls = set()
 Found_Links = set()
+infringing_urls = set()
+image_data = []
 Index = 1
 InsideTheLoop = False
 Socials = []
@@ -61,6 +66,10 @@ def ScrapeWebsite(url, depth=None, verbose=False, MonitorMode=False, ReportFile=
     global TheBaseURL
     global Socials
     global ignore_ssl
+    global image_data
+
+    SettingsString = GetSettings(RateLimmit, IgnoreSSL, ExternalVisits, DeepSearch, IncludeSocials)
+    ScannedImages = set()
 
     warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
@@ -123,8 +132,60 @@ ExternalVisits: {ExternalVisits}""")
         if res.status_code == 200:
             
             driver.get(url)
-            wait = WebDriverWait(driver, 2)
+            WebDriverWait(driver, 10).until(lambda driver: driver.execute_script('return document.readyState') == 'complete')
             soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+        if soup: 
+            imgs = soup.find_all('img')
+            for images in imgs:
+                ScannedImages.add(images)
+                image_url = images.get('src')
+
+                if DebugInformation:
+                    print(Fore.MAGENTA, f"Found Image Tags: {images} with source: {image_url}")
+
+                if image_url:
+                    try:
+                        img_content = requests.get(image_url).content
+                    except requests.exceptions.MissingSchema:
+                        img_content = requests.get(urljoin(TheBaseURL, image_url)).content
+
+                    img_hash = hashlib.md5(img_content).hexdigest()
+
+                    if DebugInformation:
+                        print(Fore.MAGENTA, f"Found Image Hash: {img_hash}")
+
+                    with open("hashes.json") as file:
+                        data = json.load(file)
+
+                    for entry in data["images"]:
+                        if entry["hash"] == img_hash:
+                            original_owner = entry["copyright_owner"]
+                            original_source = entry["original_url"]
+                            
+
+                            base_domain_url = extract_domain(url)
+                            base_domain_original = extract_domain(original_source)
+                            
+                            if base_domain_url == base_domain_original:
+                                continue  
+
+                            infringing_urls.add(url)
+
+                            image_data.append({
+                                "url": url,
+                                "type": "Copyrighted Image",
+                                "original_url": original_source,
+                                "copyright_owner": original_owner,
+                                "description": entry['description'],
+                                "hash": img_hash
+                            })
+                            
+                            print(Fore.RED, f"\nCopyright Infringing Image (\"{img_hash}\") has been found on {url}.\nCopyright Owner: {original_owner}\nOriginal Source: {original_source}\n")
+                            print(Style.RESET_ALL)
+
+                            break
+
 
         if soup and verbose:
             for anchor_tag in soup.find_all('a', href=True):
@@ -176,7 +237,7 @@ ExternalVisits: {ExternalVisits}""")
                     print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
                 driver.quit()
                 if ReportFile:
-                    SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
+                    SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
                     exit()
 
         else:
@@ -193,7 +254,7 @@ ExternalVisits: {ExternalVisits}""")
                     print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
                 driver.quit()
                 if ReportFile:
-                    SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
+                    SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
                     exit()
     
     except SSLError:
@@ -206,7 +267,7 @@ ExternalVisits: {ExternalVisits}""")
         print(Style.RESET_ALL)
 
         if ReportFile:
-            SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
+            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
             exit()
 
     except requests.exceptions.TooManyRedirects:
@@ -214,12 +275,12 @@ ExternalVisits: {ExternalVisits}""")
         print(Style.RESET_ALL)
 
         if ReportFile:
-            SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
+            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
             exit()
 
     except KeyboardInterrupt:
         print("Exiting Scrape Mode.")
 
         if ReportFile:
-            SaveReport(URL=TheBaseURL, content=visited_urls, detailed=DetailedReport, found_links=Found_Links)
+            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
             exit()
