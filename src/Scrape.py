@@ -183,7 +183,8 @@ ExternalVisits: {ExternalVisits}""")
                     next_link = TheQueue.get()
                     ScrapeWebsite(next_link, depth=depth, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch)
                 if verbose:    
-                    print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
+                    print(Fore.YELLOW, f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
+                    print(Style.RESET_ALL)
                 driver.quit()
                 if ReportFile:
                     SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
@@ -200,7 +201,8 @@ ExternalVisits: {ExternalVisits}""")
                     next_link = TheQueue.get()
                     ScrapeWebsite(next_link, depth=depth, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch)
                 if verbose:    
-                    print(f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
+                    print(Fore.YELLOW, f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
+                    print(Style.RESET_ALL)
                 driver.quit()
                 if ReportFile:
                     SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
