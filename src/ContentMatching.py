@@ -109,7 +109,7 @@ def ScanFiles(soup: BeautifulSoup, url, DebugInformation: bool):
                     link_content = requests.get(link_url).content
                 except requests.exceptions.MissingSchema:
                     link_content = requests.get(urljoin(TheBaseURL, link_url)).content
-                except requests.exceptions.SSLError:
+                except (requests.exceptions.SSLError, requests.exceptions.InvalidSchema):
                     if DebugInformation:
                         print(Fore.RED, f"URL: {url} couln't be scanned. Skipping")
                     continue
