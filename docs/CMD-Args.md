@@ -35,7 +35,6 @@ python CopyrightArmor.py -url entertainmasters.github.io --rate-limit
 
 These Command Arguments have no functionality but are available.
 
-- `--monitor` - Probably is already by default enabled, arg needs to be removed
 - `--depth`
 - `--ignore-robots-txt`
 - `--user-agent`

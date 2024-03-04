@@ -37,7 +37,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="The Free Tool to scan the websites for infringing content to take down")
 
-    parser.add_argument("-monitor", action="store_true", help="Enable monitoring mode")
     parser.add_argument("-ver", "--version", action="store_true", help="Print the version information")
     parser.add_argument("-url", "-link", "--site", help="specifies the URL of the piracy website to scan. This option can be used multiple times to specify multiple websites.")
     parser.add_argument("--report-file", action="store_true", help="Specify if there should be a report file when exiting")
@@ -64,7 +63,7 @@ if __name__ == "__main__":
     if args.version:
         PrintVersion()
 
-    if args.proxy or args.ignore_robots_txt or args.file_types or args.monitor or args.user_agent:
+    if args.proxy or args.ignore_robots_txt or args.file_types or args.user_agent:
         unimplemented_args = []
         if args.proxy:
             unimplemented_args.append("proxy")
@@ -72,8 +71,6 @@ if __name__ == "__main__":
             unimplemented_args.append("ignore_robots_txt")
         if args.file_types:
             unimplemented_args.append("file_types")
-        if args.monitor:
-            unimplemented_args.append("monitor")
         if args.user_agent:
             unimplemented_args.append("user_agent")
 

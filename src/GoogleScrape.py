@@ -23,7 +23,7 @@ import time
 import warnings
 
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 from urllib3.exceptions import InsecureRequestWarning
 from colorama import Style, Fore
 
