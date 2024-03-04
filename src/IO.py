@@ -23,7 +23,6 @@ import time
 import os
 import tempfile
 import json
-import calendar
 
 from urllib.parse import urlparse
 

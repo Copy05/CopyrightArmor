@@ -24,7 +24,7 @@ import json
 
 from bs4 import BeautifulSoup
 from colorama import Style, Fore
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 from IO import extract_domain
 
 def ScanImage(soup : BeautifulSoup, url, DebugInformation : bool):
