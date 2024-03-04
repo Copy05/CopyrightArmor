@@ -150,7 +150,7 @@ ExternalVisits: {ExternalVisits}""")
                     except requests.exceptions.MissingSchema:
                         img_content = requests.get(urljoin(TheBaseURL, image_url)).content
 
-                    img_hash = hashlib.md5(img_content).hexdigest()
+                    img_hash = hashlib.sha256(img_content).hexdigest()
 
                     if DebugInformation:
                         print(Fore.MAGENTA, f"Found Image Hash: {img_hash}")
