@@ -22,8 +22,6 @@ import requests
 import time
 import queue
 import warnings
-import hashlib
-import json
 
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
@@ -35,10 +33,12 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 
-from IO import SaveReport, LoadSocialFilter, extract_domain
+from IO import SaveReport, LoadSocialFilter
 from checks import Checks
 from verbose_print import PrintFoundLinks
 from utils import GetSettings
+from ContentMatching import ScanImage
+from ScrapingEngine import AddToQueue, FilterLinks
 
 chrome_options = Options()
 chrome_options.add_argument('--headless')
@@ -49,14 +49,26 @@ chrome_options.add_argument('--disable-dev-shm-usage')
 driver = webdriver.Chrome(options=chrome_options)
 
 TheQueue = queue.Queue()
+
+# Filters
+Socials = []
+
+# URL Sets
 visited_urls = set()
 Found_Links = set()
 infringing_urls = set()
+
+# Image Data
+ScannedImages = set()
 image_data = []
-Index = 1
+
+# Flags
 InsideTheLoop = False
-Socials = []
 ignore_ssl = False
+
+# Counters
+Index = 1
+FoundLinkCount = 0
 
 def ScrapeWebsite(url, depth=None, verbose=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False, IgnoreSSL=False,
                   RateLimmitTime=2, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False, GoogleScrape=False):
@@ -67,9 +79,10 @@ def ScrapeWebsite(url, depth=None, verbose=False, ReportFile=False, ReportFormat
     global Socials
     global ignore_ssl
     global image_data
+    global ScannedImages
+    global FoundLinkCount
 
     SettingsString = GetSettings(RateLimmit, IgnoreSSL, ExternalVisits, DeepSearch, IncludeSocials)
-    ScannedImages = set()
 
     warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
@@ -135,57 +148,7 @@ ExternalVisits: {ExternalVisits}""")
             WebDriverWait(driver, 10).until(lambda driver: driver.execute_script('return document.readyState') == 'complete')
             soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-        if soup: 
-            imgs = soup.find_all('img')
-            for images in imgs:
-                ScannedImages.add(images)
-                image_url = images.get('src')
-
-                if DebugInformation:
-                    print(Fore.MAGENTA, f"Found Image Tags: {images} with source: {image_url}")
-
-                if image_url:
-                    try:
-                        img_content = requests.get(image_url).content
-                    except requests.exceptions.MissingSchema:
-                        img_content = requests.get(urljoin(TheBaseURL, image_url)).content
-
-                    img_hash = hashlib.sha256(img_content).hexdigest()
-
-                    if DebugInformation:
-                        print(Fore.MAGENTA, f"Found Image Hash: {img_hash}")
-
-                    with open("hashes.json") as file:
-                        data = json.load(file)
-
-                    for entry in data["images"]:
-                        if entry["hash"] == img_hash:
-                            original_owner = entry["copyright_owner"]
-                            original_source = entry["original_url"]
-                            
-
-                            base_domain_url = extract_domain(url)
-                            base_domain_original = extract_domain(original_source)
-                            
-                            if base_domain_url == base_domain_original:
-                                continue  
-
-                            infringing_urls.add(url)
-
-                            image_data.append({
-                                "url": url,
-                                "type": "Copyrighted Image",
-                                "original_url": original_source,
-                                "copyright_owner": original_owner,
-                                "description": entry['description'],
-                                "hash": img_hash
-                            })
-                            
-                            print(Fore.RED, f"\nCopyright Infringing Image (\"{img_hash}\") has been found on {url}.\nCopyright Owner: {original_owner}\nOriginal Source: {original_source}\n")
-                            print(Style.RESET_ALL)
-
-                            break
-
+        ScanImage(soup, url, DebugInformation)
 
         if soup and verbose:
             for anchor_tag in soup.find_all('a', href=True):
@@ -196,33 +159,19 @@ ExternalVisits: {ExternalVisits}""")
                         Found_Links.add(foundurl)
 
         if soup:
-            FoundLinkCount = 0
             for link in soup.find_all('a', href=True):
                 next_url = urljoin(url, link['href'])
 
-                if next_url.startswith("javascript:") or next_url.startswith("mailto:") or next_url.startswith("tel:"):
-                    if verbose:
-                        print(Fore.YELLOW, f"Skipping {next_url} because these types of links arent allowed")
-                        print(Style.RESET_ALL)
+                # Filtering Socials and javascript: / mailto: links out
+                if FilterLinks(next_url, verbose, IncludeSocials):
                     continue
 
-                if IncludeSocials is False:
-                    if any(next_url.startswith(social_link) for social_link in Socials):
-                        if verbose:
-                            print(Fore.YELLOW, f"Skipping {next_url}.")
-                            print(Style.RESET_ALL)
-                        continue
-
+                # If external visits is false. dont leave the page
                 if next_url.startswith(TheBaseURL) and not ExternalVisits:
-                    if next_url not in visited_urls and next_url not in TheQueue.queue:
-                        TheQueue.put(next_url)
-                        Found_Links.add(next_url)
-                        FoundLinkCount += 1
+                    AddToQueue(next_url)
+                # If External visits is true. they can leave the page
                 if ExternalVisits is True:
-                    if next_url not in visited_urls and next_url not in TheQueue.queue:
-                        TheQueue.put(next_url)
-                        Found_Links.add(next_url)
-                        FoundLinkCount += 1
+                    AddToQueue(next_url)
 
             if verbose:
                 print(Fore.YELLOW, f"{FoundLinkCount} Links has been added to the Queue. | {TheQueue.qsize()} Links in the queue")
