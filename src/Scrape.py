@@ -60,6 +60,7 @@ infringing_urls = set()
 
 # Image Data
 ScannedImages = set()
+UniqueFiles = set()
 infriding_data = []
 
 # Flags

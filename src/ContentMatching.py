@@ -28,7 +28,7 @@ from urllib.parse import urljoin
 from IO import extract_domain, LoadIgnoreFileExts
 
 def ScanImage(soup : BeautifulSoup, url, DebugInformation : bool):
-    from Scrape import ScannedImages, infriding_data, infringing_urls, TheBaseURL
+    from Scrape import ScannedImages, infriding_data, infringing_urls, TheBaseURL, UniqueFiles
 
     if soup: 
             imgs = soup.find_all('img')
@@ -65,7 +65,11 @@ def ScanImage(soup : BeautifulSoup, url, DebugInformation : bool):
                             if base_domain_url == base_domain_original:
                                 continue  
 
+                            if img_hash in UniqueFiles:
+                                continue
+
                             infringing_urls.add(url)
+                            UniqueFiles.add(img_hash)
 
                             infriding_data.append({
                                 "url": url,
@@ -82,7 +86,7 @@ def ScanImage(soup : BeautifulSoup, url, DebugInformation : bool):
                             break
 
 def ScanFiles(soup: BeautifulSoup, url, DebugInformation: bool):
-    from Scrape import infriding_data, infringing_urls, TheBaseURL, Socials
+    from Scrape import infriding_data, infringing_urls, TheBaseURL, Socials, UniqueFiles
 
     exts = LoadIgnoreFileExts()
 
@@ -129,7 +133,11 @@ def ScanFiles(soup: BeautifulSoup, url, DebugInformation: bool):
                         if base_domain_url == base_domain_original:
                             continue
 
+                        if link_hash in UniqueFiles:
+                            continue
+
                         infringing_urls.add(url)
+                        UniqueFiles.add(link_hash)
 
                         infriding_data.append({
                             "url": url,
