@@ -5,6 +5,7 @@
 
 # Features
 - **Detecting Stolen Images**: CopyrightArmor detects stolen images by matching sha256 "hashes"
+- **Detecting Stolen Files**: CopyrightArmor detects stolen files by matching sha256 "hashes"
 - **Web Scraping Engine**: CopyrightArmor uses a robust web scraping engine to crawl and analyze websites for potentially infringing content.
 - **Recursive Scrapping**: Recursively scans websites.
 - **Google Optimized**: by using `--google` and `--google-search` without `-url` the web scraping engine will be optimized for Google Search.
@@ -56,12 +57,14 @@ pip install -r requirements.txt
             "hash": "3b99f49776f433aeb000fa010e452879198fe4be7f6660552527b53304268342",
             "description": "A Pink Cherry Tree"
         },
+    ],
+    "files": [
         {
-            "original_url": "https://t3.ftcdn.net/jpg/05/41/71/02/361_F_541710260_3qZwn627nHyHA99xIktU7tKotn93YGjw.jpg",
+            "original_url": "https://t3.ftcdn.net/jpg/05/41/71/02/361_F_541710260_3qZwn627nHyHA99xIktU7tKotn93YGjw.exe",
             "copyright_owner": "Example Corperation.",
             "hash": "3b99f49776f433aeb000fa010e452879198fe4be7f6660552527b53304268343",
-            "description": "Another Pink Cherry Tree"
-        },
+            "description": "Another Pink Cherry Tree Exe"
+        }
     ]
 }
 ```
