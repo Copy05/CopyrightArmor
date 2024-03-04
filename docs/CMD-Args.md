@@ -36,8 +36,5 @@ python CopyrightArmor.py -url entertainmasters.github.io --rate-limit
 These Command Arguments have no functionality but are available.
 
 - `--depth`
-- `--ignore-robots-txt`
-- `--user-agent`
-- `--proxy`
 - `--file-types`
 - `--keyword`

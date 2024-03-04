@@ -59,7 +59,7 @@ Socials = []
 ignore_ssl = False
 
 def ScrapeWebsite(url, depth=None, verbose=False, ReportFile=False, ReportFormat=".txt", RateLimmit=False, IgnoreSSL=False,
-                  RateLimmitTime=2, IgnoreRobotTXT=False, EnableProxy=False, CustomUserAgent=None, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False, GoogleScrape=False, DetailedReport=False):
+                  RateLimmitTime=2, ExternalVisits=False, DeepSearch=False, ExcludePaths=None, IncludeSocials=False, DebugInformation=False, GoogleScrape=False):
     
     global Index
     global InsideTheLoop

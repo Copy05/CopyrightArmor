@@ -40,15 +40,11 @@ if __name__ == "__main__":
     parser.add_argument("-ver", "--version", action="store_true", help="Print the version information")
     parser.add_argument("-url", "-link", "--site", help="specifies the URL of the piracy website to scan. This option can be used multiple times to specify multiple websites.")
     parser.add_argument("--report-file", action="store_true", help="Specify if there should be a report file when exiting")
-    parser.add_argument("--detailed-report", "-dr", action="store_true", help="Includes The Found Links List and Queue List within the report file.")
     parser.add_argument("--rate-limit", action="store_true", help="Set a rate limit for requests (requests per second) to avoid overloading websites.")
     parser.add_argument("--verbose", "-v", action="store_true", help="Increase verbosity for debugging purposes.")
     parser.add_argument("--debug", action="store_true", help="Enables Debug Informations for Debug purposes")
     parser.add_argument("--file-types", help="Specify file types/extensions to look for (e.g., .mp3, .mp4, .pdf).")
     parser.add_argument("--keyword", help="Provide keywords or phrases to identify pirated content.")
-    parser.add_argument("--proxy", "-p", action="store_true", help="Use a proxy server for anonymized scanning (if necessary).")
-    parser.add_argument("--user-agent", "-ua", help="Specify a custom User-Agent header for HTTP requests (to mimic different user agents).")
-    parser.add_argument("--ignore-robots-txt", "--no-robots-txt", help="Ignore the 'robots.txt' file, which is used to control web crawlers.")
     parser.add_argument("--depth", "-d", type=int, help="Specify how deep the tool should crawl the website (number of levels).")
     parser.add_argument("--external-visits", "-ev", action="store_true", help="Enables visiting sites that's outside the original website")
     parser.add_argument("--deep-search", "-ds", action="store_true", help="Enables deep search which also includes query paramters (.*?*=*)")
@@ -63,16 +59,10 @@ if __name__ == "__main__":
     if args.version:
         PrintVersion()
 
-    if args.proxy or args.ignore_robots_txt or args.file_types or args.user_agent:
+    if args.file_types:
         unimplemented_args = []
-        if args.proxy:
-            unimplemented_args.append("proxy")
-        if args.ignore_robots_txt:
-            unimplemented_args.append("ignore_robots_txt")
         if args.file_types:
             unimplemented_args.append("file_types")
-        if args.user_agent:
-            unimplemented_args.append("user_agent")
 
         unimplemented_args_str = ", ".join(unimplemented_args)
     
@@ -87,15 +77,10 @@ if __name__ == "__main__":
 
         if not urlparse(args.site).scheme:
             args.site = "https://" + args.site
-        
-        if args.detailed_report and args.report_file is False:
-            print(Fore.RED, "Error: Invalid Argument: \"--detailed-report\" because \"--report_file\" is false")
-            print(Style.RESET_ALL)
-            exit(1)
 
         ScrapeWebsite(args.site, depth=args.depth, RateLimmit=args.rate_limit, verbose=args.verbose, ExternalVisits=args.external_visits, 
                   DeepSearch=args.deep_search, ReportFile=args.report_file, ExcludePaths=args.exclude, IncludeSocials=args.include_socials, DebugInformation=args.debug, 
-                  GoogleScrape=args.google, DetailedReport=args.detailed_report, IgnoreSSL=args.ignore_ssl)
+                  GoogleScrape=args.google, IgnoreSSL=args.ignore_ssl)
 
 
     if args.google and not args.site:
