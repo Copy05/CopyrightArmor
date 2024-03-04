@@ -25,10 +25,10 @@ import json
 from bs4 import BeautifulSoup
 from colorama import Style, Fore
 from urllib.parse import urljoin
-from IO import extract_domain
+from IO import extract_domain, LoadIgnoreFileExts
 
 def ScanImage(soup : BeautifulSoup, url, DebugInformation : bool):
-    from Scrape import ScannedImages, image_data, infringing_urls, TheBaseURL
+    from Scrape import ScannedImages, infriding_data, infringing_urls, TheBaseURL
 
     if soup: 
             imgs = soup.find_all('img')
@@ -67,7 +67,7 @@ def ScanImage(soup : BeautifulSoup, url, DebugInformation : bool):
 
                             infringing_urls.add(url)
 
-                            image_data.append({
+                            infriding_data.append({
                                 "url": url,
                                 "type": "Copyrighted Image",
                                 "original_url": original_source,
@@ -80,3 +80,67 @@ def ScanImage(soup : BeautifulSoup, url, DebugInformation : bool):
                             print(Style.RESET_ALL)
 
                             break
+
+def ScanFiles(soup: BeautifulSoup, url, DebugInformation: bool):
+    from Scrape import infriding_data, infringing_urls, TheBaseURL, Socials
+
+    exts = LoadIgnoreFileExts()
+
+    if soup:
+        # Find all <a> tags
+        links = soup.find_all('a')
+        for link in links:
+            link_text = link.get_text()
+            link_url = link.get('href')
+
+            if DebugInformation:
+                if link_url and link_url != '/' and link_url != "/#":
+                    print(Fore.MAGENTA, f"Found Link: {link_text} with href: {link_url}")
+
+            if not link_url or link_url == '/' or link_url == "/#":
+                continue
+
+            if link_url and not any(link_url.endswith(ext) for ext in exts) and not any(link_url.startswith(social_link) for social_link in Socials):
+                try:
+                    link_content = requests.get(link_url).content
+                except requests.exceptions.MissingSchema:
+                    link_content = requests.get(urljoin(TheBaseURL, link_url)).content
+                except requests.exceptions.SSLError:
+                    if DebugInformation:
+                        print(Fore.RED, f"URL: {url} couln't be scanned. Skipping")
+                    continue
+
+                link_hash = hashlib.sha256(link_content).hexdigest()
+
+                if DebugInformation:
+                    print(Fore.MAGENTA, f"Found File Hash: {link_hash}")
+
+                with open("hashes.json") as file:
+                    data = json.load(file)
+
+                for entry in data["files"]:
+                    if entry["hash"] == link_hash:
+                        original_owner = entry["copyright_owner"]
+                        original_source = entry["original_url"]
+
+                        base_domain_url = extract_domain(url)
+                        base_domain_original = extract_domain(original_source)
+
+                        if base_domain_url == base_domain_original:
+                            continue
+
+                        infringing_urls.add(url)
+
+                        infriding_data.append({
+                            "url": url,
+                            "type": "Copyrighted File",
+                            "original_url": original_source,
+                            "copyright_owner": original_owner,
+                            "description": entry['description'],
+                            "hash": link_hash
+                        })
+
+                        print(Fore.RED, f"\nCopyright Infringing File (\"{link_hash}\") has been found on {url}.\nCopyright Owner: {original_owner}\nOriginal Source: {original_source}\n")
+                        print(Style.RESET_ALL)
+
+                        break

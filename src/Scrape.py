@@ -37,7 +37,7 @@ from IO import SaveReport, LoadSocialFilter
 from checks import Checks
 from verbose_print import PrintFoundLinks
 from utils import GetSettings
-from ContentMatching import ScanImage
+from ContentMatching import ScanImage, ScanFiles
 from ScrapingEngine import AddToQueue, FilterLinks
 
 chrome_options = Options()
@@ -60,7 +60,7 @@ infringing_urls = set()
 
 # Image Data
 ScannedImages = set()
-image_data = []
+infriding_data = []
 
 # Flags
 InsideTheLoop = False
@@ -78,7 +78,7 @@ def ScrapeWebsite(url, depth=None, verbose=False, ReportFile=False, ReportFormat
     global TheBaseURL
     global Socials
     global ignore_ssl
-    global image_data
+    global infriding_data
     global ScannedImages
     global FoundLinkCount
 
@@ -149,6 +149,7 @@ ExternalVisits: {ExternalVisits}""")
             soup = BeautifulSoup(driver.page_source, 'html.parser')
 
         ScanImage(soup, url, DebugInformation)
+        ScanFiles(soup, url, DebugInformation)
 
         if soup and verbose:
             for anchor_tag in soup.find_all('a', href=True):
@@ -181,13 +182,13 @@ ExternalVisits: {ExternalVisits}""")
                 InsideTheLoop = True
                 while not TheQueue.empty():
                     next_link = TheQueue.get()
-                    ScrapeWebsite(next_link, depth=depth, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch)
+                    ScrapeWebsite(next_link, depth=depth, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch, DebugInformation=DebugInformation)
                 if verbose:    
-                    print(Fore.YELLOW, f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
+                    print(Fore.YELLOW, f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}\n{Fore.RED}Infriding Content: {len(infringing_urls)}")
                     print(Style.RESET_ALL)
                 driver.quit()
                 if ReportFile:
-                    SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
+                    SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
                     exit()
 
         else:
@@ -199,26 +200,29 @@ ExternalVisits: {ExternalVisits}""")
                 InsideTheLoop = True
                 while not TheQueue.empty():
                     next_link = TheQueue.get()
-                    ScrapeWebsite(next_link, depth=depth, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch)
+                    ScrapeWebsite(next_link, depth=depth, RateLimmit=RateLimmit, verbose=verbose, ExternalVisits=ExternalVisits, DeepSearch=DeepSearch, DebugInformation=DebugInformation)
                 if verbose:    
-                    print(Fore.YELLOW, f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}")
+                    print(Fore.YELLOW, f"URL: {TheBaseURL}\nVisited URLs: {len(visited_urls)}\nFound Links: {len(Found_Links)}\n{Fore.RED}Infriding Content: {len(infringing_urls)}")
                     print(Style.RESET_ALL)
                 driver.quit()
                 if ReportFile:
-                    SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
+                    SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
                     exit()
     
     except SSLError:
         print(Fore.RED, f"URL: {url} has not a valid SSL Certificate. Skipping.")
         print(Style.RESET_ALL)
-        pass
+
+        if ReportFile:
+            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
+            exit()
 
     except requests.exceptions.ConnectionError:
         print(Fore.RED, f"There is a issue with connecting to the site: {url}")
         print(Style.RESET_ALL)
 
         if ReportFile:
-            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
+            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
             exit()
 
     except requests.exceptions.TooManyRedirects:
@@ -226,12 +230,12 @@ ExternalVisits: {ExternalVisits}""")
         print(Style.RESET_ALL)
 
         if ReportFile:
-            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
+            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
             exit()
 
     except KeyboardInterrupt:
         print("Exiting Scrape Mode.")
 
         if ReportFile:
-            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, image_data=image_data, scanned_images=ScannedImages)
+            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
             exit()

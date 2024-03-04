@@ -33,11 +33,18 @@ def LoadSocialFilter() -> list[str]:
     socials = data["socials"]
     return socials
 
+def LoadIgnoreFileExts() -> list[str]:
+    with open('filters.json', 'r') as file:
+        data = json.load(file)
+
+    exts = data["ignore_exts"]
+    return exts
+
 def extract_domain(url):
     parsed_url = urlparse(url)
     return parsed_url.netloc
 
-def SaveReport(URL: str, content: set, infriding_urls: set, settings_string : str, image_data : list[dict], scanned_images : set):
+def SaveReport(URL: str, content: set, infriding_urls: set, settings_string : str, infriding_data : list[dict], scanned_images : set):
     now = datetime.datetime.now()
     formatted_date = now.strftime("%y-%m-%d")
     milliseconds = int(time.time() * 1000)
@@ -112,7 +119,7 @@ def SaveReport(URL: str, content: set, infriding_urls: set, settings_string : st
         infriding_count = 1
 
         if infriding_urls:
-            for data in image_data:
+            for data in infriding_data:
                 file.write(f"{infriding_count}. URL: {data.get('url')}\n")
                 file.write(f"Type: {data.get('type')}\n")
                 file.write(f"Description: {data.get('description')}\n")

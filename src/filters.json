@@ -17,5 +17,26 @@
         "https://www.whatsapp.com/",
         "https://mastodon.social",
         "https://www.twitch.tv/"
+    ],
+    "ignore_exts": [
+        ".html",
+        ".php",
+        ".jsp",
+        ".xml",
+        ".json",
+        ".asp",
+        ".aspx",
+        ".ini",
+        ".htaccess",
+        ".gitignore",
+        ".gitkeep",
+        ".gitattributes",
+        ".htpasswd",
+        ".env",
+        ".babelrc",
+        ".eslintrc",
+        ".editorconfig",
+        ".npmrc",
+        ".dockerignore"
     ]
 }
