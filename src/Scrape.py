@@ -22,6 +22,7 @@ import requests
 import time
 import queue
 import warnings
+import urllib3
 
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
@@ -190,7 +191,7 @@ ExternalVisits: {ExternalVisits}""")
                 driver.quit()
                 if ReportFile:
                     SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
-                    exit()
+                exit()
 
         else:
             if verbose:
@@ -208,7 +209,7 @@ ExternalVisits: {ExternalVisits}""")
                 driver.quit()
                 if ReportFile:
                     SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
-                    exit()
+                exit()
     
     except SSLError:
         print(Fore.RED, f"URL: {url} has not a valid SSL Certificate. Skipping.")
@@ -216,7 +217,7 @@ ExternalVisits: {ExternalVisits}""")
 
         if ReportFile:
             SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
-            exit()
+        exit()
 
     except requests.exceptions.ConnectionError:
         print(Fore.RED, f"There is a issue with connecting to the site: {url}")
@@ -224,7 +225,7 @@ ExternalVisits: {ExternalVisits}""")
 
         if ReportFile:
             SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
-            exit()
+        exit()
 
     except requests.exceptions.TooManyRedirects:
         print(Fore.RED, "Overloaded.")
@@ -232,11 +233,20 @@ ExternalVisits: {ExternalVisits}""")
 
         if ReportFile:
             SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
-            exit()
+        exit()
+
+    except urllib3.exceptions.MaxRetryError:
+        print(Fore.RED, "Overloaded.")
+        print(Style.RESET_ALL)
+
+
+        if ReportFile:
+            SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
+        exit()
 
     except KeyboardInterrupt:
         print("Exiting Scrape Mode.")
 
         if ReportFile:
             SaveReport(URL=TheBaseURL, content=visited_urls, infriding_urls=infringing_urls, settings_string=SettingsString, infriding_data=infriding_data, scanned_images=ScannedImages)
-            exit()
+        exit()
