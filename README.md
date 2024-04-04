@@ -69,6 +69,10 @@ pip install -r requirements.txt
 }
 ```
 
+# Contribution
+
+I do accept contributions to this project. create a pull request and describe your changes !
+
 # Most Targetted Copyright Owners
 
 **To see how much piracy happened on the internet here is a graph:**
