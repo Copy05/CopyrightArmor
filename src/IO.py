@@ -40,6 +40,13 @@ def LoadIgnoreFileExts() -> list[str]:
     exts = data["ignore_exts"]
     return exts
 
+def LoadWhitelist() -> list[str]:
+    with open('filters.json', 'r') as file:
+        data = json.load(file)
+
+    wl = data["whitelist"]
+    return wl
+
 def extract_domain(url):
     parsed_url = urlparse(url)
     return parsed_url.netloc

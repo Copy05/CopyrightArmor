@@ -1,0 +1,27 @@
+{
+    "patterns": {
+      "anime_pattern": "(.*)(Episode\\s(0|[1-9]\\d{0,2}|1\\d{3}|2000)\\s(?:English|Deutsch)\\sSub)(.*)",
+      "turkish_pattern": "(.*)(\\d+\\.\\sSezon\\s\\d+\\.\\sBölüm)(.*)",
+      "pirated_patterns": [
+        "(.*)(Episode\\s\\d+\\s(?:English|Deutsch))(.*)",
+        "(.*)(?:Hindi\\sDubbed|Dubbed|VietSub|Deutsche\\sUntertiteln|DUB|SUB)(.*)",
+        "(.*)(Multi\\sAudio)(.*)",
+        "(.*)(VOSTFR)(.*)",
+        "(.*)(Stream)(?!ing)(.*)",
+        "(.*)(Watch\\sNow)(.*)",
+        "(.*)(For\\sFree)(.*)",
+        "\\b(?:Anime\\s*)?\\bHigh\\s*Quality\\b.*\\bFree\\b",
+        "\\b(?:Lordfilm|Лордфильм|Lordserial|Aniwave|9Anime|Lordseria|hianime|zorox|4anime|kissanime|anix|aniworld|9anime|gogoanime)\\b",
+        "\\bRead .{4,} Online Free\\b",
+        "(.*)\\s\\(Official Simulpub\\)",
+        "\\bWatch .{3,} Season .{1,} Online Free\\b"
+      ],
+      "resolution_pattern": "(.*)(?:Watch)\\s(.*)\\s(?:inHD|in\\s1080p|in\\s1440p|in\\s4K|in\\s2160p|in\\s8K)?\\s?(?:Online)?(?:For\\sFree)?",
+      "episode_pattern": "(.*)(Episode\\s\\d+)(.*)",
+      "staffel_pattern": "(.*)(Staffel\\s\\d+)(.*)",
+      "legal_sites_pattern": "(Crunchyroll|Funimation|Netflix|Hulu|Amazon\\sPrime|Disney\\s\\+|Youtube|Twitter|Facebook|Imdb|Yahoo)",
+      "anime_deep_pattern": "^(?:^|.*\\b)(Stream|Watch)\\s+online(?:\\s+free)?(?:\\b.*)?$",
+      "manga_chapter_pattern": "(.*),\\sChapter\\s\\d+",
+      "manga_online_pattern": "(.*)(Manga\\s.*)\\sOnline\\s-\\s\\[ENGLISH\\]"
+    }
+}

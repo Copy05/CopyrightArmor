@@ -88,13 +88,7 @@ if __name__ == "__main__":
         # To Avoid Long Execution Time when not using the scraping engine.
         from GoogleScrape import GoogleScrape
 
-        if args.detailed_report and args.report_file is False:
-            print(Fore.RED, "Error: Invalid Argument: \"--detailed-report\" because \"--report_file\" is false")
-            print(Style.RESET_ALL)
-            exit(1)
-
         GoogleScrape(Query=args.google_search, RateLimmit=args.rate_limit, verbose=args.verbose, ReportFile=args.report_file)
-
 
     if not any(vars(args).values()):
         print(Fore.RED, "Error: No arguments provided. Use -h or --help for usage information.")

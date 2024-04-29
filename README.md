@@ -9,6 +9,7 @@
 - **Web Scraping Engine**: CopyrightArmor uses a robust web scraping engine to crawl and analyze websites for potentially infringing content.
 - **Recursive Scrapping**: Recursively scans websites.
 - **Google Optimized**: by using `--google` and `--google-search` without `-url` the web scraping engine will be optimized for Google Search.
+- **Google SERP Engine**: CopyrightArmor detects most of pirate sites on the Google Search results. ([always check for false positives](https://github.com/Copy05/CopyrightArmor/discussions/4))
 - **Flexible**: You can configurate how and what type of links it should scrape:
     - Exclude Social Media Links
     - Exclude Query parameter links
@@ -48,6 +49,8 @@ pip install -r requirements.txt
 ```
 
 4. Open up `src/hashes.json` and add all content that you want to scan for and use this syntax:
+
+**`--google-search`** scans only for the content inside `"entertainment"`
 ```json
 {
     "images": [
@@ -64,6 +67,14 @@ pip install -r requirements.txt
             "copyright_owner": "Example Corperation.",
             "hash": "3b99f49776f433aeb000fa010e452879198fe4be7f6660552527b53304268343",
             "description": "Another Pink Cherry Tree Exe"
+        }
+    ],
+    "entertainment": [
+        {
+            "title": "EntertainRewind 2024",
+            "original_url": "example.com",
+            "copyright_owner": "Entertainmasters",
+            "hash": "c8392dc67d913d39664e0fc400280a2de03107348f7432e226194f0a7e4eeebe"
         }
     ]
 }

@@ -38,5 +38,8 @@
         ".editorconfig",
         ".npmrc",
         ".dockerignore"
+    ],
+    "whitelist": [
+        "https://www.youtube.com/"
     ]
 }

@@ -14,5 +14,13 @@
             "hash": "81ecf8a6c049c784bd48dc40bcbd3840c7a95d31bd4a82ed40db9610cb639de2",
             "description": "Mediakit"
         }
+    ],
+    "entertainment": [
+        {
+            "title": "Test123",
+            "original_url": "https://imdb.com/zuez9zw7ez79z79q",
+            "copyright_owner": "Example Inc",
+            "hash": "c8392dc67d913d39664e0fc400280a2de03107348f7432e226194f0a7e43f2be"
+        }
     ]
 }

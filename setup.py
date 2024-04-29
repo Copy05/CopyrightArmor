@@ -22,7 +22,7 @@ from setuptools import setup
 
 setup(
     name="CopyrightArmor",
-    version="0.2",
+    version="1.0",
     author="Copy05",
     description="A tool that scans the web for pirated content",
     url="https://github.com/Copy05/CopyrightArmor/",

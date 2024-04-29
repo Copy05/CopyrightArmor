@@ -35,34 +35,49 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from IO import SaveReport
+from IO import SaveReport, LoadWhitelist, extract_domain
 from verbose_print import PrintFoundLinks
+from ContentMatching import ScanGoogleLink
+from ScrapingEngine import FilterLinks
+from utils import GetSettings
 
 chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--log-level=3')
 chrome_options.add_argument('--disable-logging')
 chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--disable-extensions")
+chrome_options.add_argument("--remote-debugging-pipe")
 
 driver = webdriver.Chrome(options=chrome_options)
 
 Found_Links = set()
+ScannedImages = set()
+UniqueFiles = set()
+infringing_urls = set()
+infriding_data = []
 Index = 1
 CookieBannerClicked = False
+SearchQuery = None
 
-MORE_RESULTS_BUTTON_XPATHS = ["//*[@id='botstuff']/div/div[3]/div[4]/a[1]/h3/div", "//*[@id='kp-wp-tab-cont-overview']/div/div[2]/div/div/div[4]/a[1]/h3/div", "//*[@id='kp-wp-tab-cont-overview']/div/div[2]/div/div/div[4]/a[2]/h3/span"]
+MORE_RESULTS_BUTTON_XPATHS = ["//*[@id='botstuff']/div/div[3]/div[4]/a[1]/h3/div", "//*[@id='kp-wp-tab-cont-overview']/div/div[2]/div/div/div[4]/a[1]/h3/div", "//*[@id='kp-wp-tab-cont-overview']/div/div[2]/div/div/div[4]/a[2]/h3/span", "//*[@id='kp-wp-tab-cont-overview']/div/div[3]/div/div/div[4]/a[1]/h3/div", "//*[@id='botstuff']/div/div[4]/div[4]/a[1]/h3/div", "//*[@id='kp-wp-tab-cont-TvmWatch']/div/div[3]/div/div/div[4]/a[1]/h3/div"]
 
 def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateLimmitTime=2):
     
     global CookieBannerClicked
+    global SearchQuery
 
     URL = f"https://google.com/search?q={Query}&cs=0&filter=0&safe=off&nfpr=1"
 
     warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
     soup = None
-    MAXIMAL_RETRIES = 5
+    MAXIMAL_RETRIES = 3
     Retries = 0
+    SearchQuery = Query
+    whitelist = LoadWhitelist()
+    
 
     if RateLimmit:
         time.sleep(RateLimmitTime)
@@ -91,21 +106,13 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
             for link in soup.find_all('a', href=True):
                 next_url = urljoin(URL, link['href'])
 
-                if next_url.startswith("mailto:"):
-                    if verbose:
-                        print(Fore.YELLOW, f"Skipping {next_url} because 'mailto' links arent allowed")
-                        print(Style.RESET_ALL)
-                    continue
-                if next_url.startswith("javascript:"):
-                    if verbose:
-                        print(Fore.YELLOW, f"Skipping {next_url} because 'javascript' links arent allowed")
-                        print(Style.RESET_ALL)
+                if FilterLinks(next_url, verbose, True):
                     continue
 
                 if next_url not in Found_Links and "google.com" not in next_url:
                     Found_Links.add(next_url)
                     FoundLinkCount += 1
-
+                
             if verbose:
                 print(Fore.YELLOW, f"{FoundLinkCount} Links has been added to the List. | {len(Found_Links)} Links in the List")
                 print(Style.RESET_ALL)
@@ -123,7 +130,10 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
                         Found_Links.add(next_url)
                         FoundLinkCount += 1
                         FoundAnyLinks = True
-
+                        
+                        if extract_domain(next_url) not in whitelist:
+                            ScanGoogleLink(url=next_url, title=link.text.strip(), verbose=verbose, DebugInformation=False)
+                        
                 if CookieBannerClicked is False:
                     try:
                         cookie_banner = driver.find_element(By.XPATH, "//*[@id='CXQnmb']")
@@ -136,8 +146,7 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
                         pass
 
                 try:
-                    print(Fore.GREEN, f"Searching [Links Found: {len(Found_Links)}]")
-                    print(Style.RESET_ALL)
+                    print(f"{Fore.GREEN}Searching [Links Found: {len(Found_Links)}] {Fore.WHITE}| {Fore.RED}Infriding Links Found: {len(infriding_data)}{Style.RESET_ALL}")
 
                     if verbose:
                         print(Fore.YELLOW, f"{FoundLinkCount} Links has been added to the List. | {len(Found_Links)} Links in the List")
@@ -168,22 +177,22 @@ def GoogleScrape(Query, verbose=False, ReportFile=False, RateLimmit=False, RateL
                         driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
                     pass
 
-            print(f"Query: {Query}\nFound Links: {len(Found_Links)}")
+            print(f"Query: {Query}\nFound Links: {len(Found_Links)}\n{Fore.RED}Infriding Search Results: {len(infriding_data)}{Style.RESET_ALL}")
             if ReportFile:
-                SaveReport(URL=f"Google_Search_{Query}", content=Found_Links, detailed=False, found_links=Found_Links)
-                exit()
+                SaveReport(URL=f"Google_Search_{Query}", content=Found_Links, settings_string=GetSettings(RateLimmit, False, False, False, False), infriding_data=infriding_data, infriding_urls=infringing_urls, scanned_images=ScannedImages)
+            exit()
 
     except requests.exceptions.TooManyRedirects:
         print(Fore.RED, "Overloaded.")
         print(Style.RESET_ALL)
 
         if ReportFile:
-            SaveReport(URL=f"Google_Search_{Query}", content=Found_Links, detailed=False, found_links=Found_Links)
-            exit()
+            SaveReport(URL=f"Google_Search_{Query}", content=Found_Links, settings_string=GetSettings(RateLimmit, False, False, False, False), infriding_data=infriding_data, infriding_urls=infringing_urls, scanned_images=ScannedImages)
+        exit()
 
     except KeyboardInterrupt:
         print("Exiting Scrape Mode.")
 
         if ReportFile:
-            SaveReport(URL=f"Google_Search_{Query}", content=Found_Links, detailed=False, found_links=Found_Links)
-            exit()
+            SaveReport(URL=f"Google_Search_{Query}", content=Found_Links, settings_string=GetSettings(RateLimmit, False, False, False, False), infriding_data=infriding_data, infriding_urls=infringing_urls, scanned_images=ScannedImages)
+        exit()
